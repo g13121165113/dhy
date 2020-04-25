@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layuiAdmin 网站用户</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../../../layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../../../layuiadmin/style/admin.css" media="all">
+  <script src="../../layuiadmin/jquery.min.js"></script>
+</head>
+<body>
+
+  <div class="layui-fluid">
+    <div class="layui-card">
+      <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+<!--          <div class="layui-inline">-->
+<!--            <label class="layui-form-label">ID</label>-->
+<!--            <div class="layui-input-block">-->
+<!--              <input type="text" name="id" placeholder="请输入" autocomplete="off" class="layui-input">-->
+<!--            </div>-->
+<!--          </div>-->
+          <div class="layui-inline">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-block">
+              <input type="text" name="name" value="" placeholder="请输入" autocomplete="off" class="layui-input name">
+            </div>
+          </div>
+          <div class="layui-inline">
+            <label class="layui-form-label">联系人</label>
+            <div class="layui-input-block">
+              <input type="text" name="mobile" value="" placeholder="请输入" autocomplete="off" class="layui-input mobile">
+            </div>
+          </div>
+<!--          <div class="layui-inline">-->
+<!--            <label class="layui-form-label">性别</label>-->
+<!--            <div class="layui-input-block">-->
+<!--              <select name="sex">-->
+<!--                <option value="0">不限</option>-->
+<!--                <option value="1">男</option>-->
+<!--                <option value="2">女</option>-->
+<!--              </select>-->
+<!--            </div>-->
+<!--          </div>-->
+          <div class="layui-inline">
+            <button onclick="getParam()" class="layui-btn layuiadmin-btn-useradmin sousuo" lay-submit lay-filter="LAY-user-front-search">
+              <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="layui-card-body">
+        <div style="padding-bottom: 10px;">
+<!--          <button class="layui-btn layuiadmin-btn-useradmin" data-type="batchdel">删除</button>-->
+          <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加核心代理商</button>
+        </div>
+        <table class="layui-table tanl">
+          <thead>
+          <tr>
+            <th>用户名</th>
+            <th>联系人</th>
+            <th>公司名称</th>
+            <th>客户数量</th>
+             <th>余额</th>
+             <th>今日消费</th>
+             <th>会员等级</th>
+            <th>注册时间</th>
+            <th>最近登录</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+          </thead>
+          <tbody id="biuuu_city_list">
+
+
+          </tbody>
+        </table>
+<!--        <script type="text/html" id="imgTpl">-->
+<!--          <img style="display: inline-block; width: 50%; height: 100%;" src= {{ d.avatar }}>-->
+<!--        </script> -->
+<!--        <script type="text/html" id="table-useradmin-webuser">-->
+<!--          <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>-->
+<!--          <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="editBalance"><i class="layui-icon layui-icon-edit"></i>编辑</a>-->
+<!--          <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>-->
+<!--        </script>-->
+      </div>
+        <div id="demo7"></div>
+
+    </div>
+  </div>
+  <script src="../../layuiadmin/jquery.min.js"></script>
+  <script src="../../../layuiadmin/layui/layui.js"></script>
+  <script type="text/javascript">
+        var url;
+      getParam();
+      function getParam() {
+           url = location.search.substring(1);//location.search得到的是？后面的数据: ?modelId='+data.id,substring() 方法用于提取字符串中介于两个指定下标之间的字符;得到的是去掉?的部分
+          //根据id发送ajax查询数据
+          //获取搜索内容
+            var name = $('.name').val();
+            var mobile = $('.mobile').val();
+          $.ajax({
+              url:"http://test.tp.cn/api/admininfo/admin",
+              data:{id:url,name:name,mobile:mobile},
+              dataType: 'json',
+              success:function(res) {
+                  if(res.status == 2){
+                      layui.use('layer', function(){
+                          var layer = layui.layer;
+                          layer.msg('暂无数据', {
+                              offset: '15px'
+                              ,icon: 1
+                          }, function(){
+                              // location.href = 'user/login.html'; //未登录调到登录页
+                          });
+                      });
+                  }
+                  if(res.status == 1) {
+                      var data = res.data;
+                      layui.use(['laypage', 'layer'], function(){
+                          var laypage = layui.laypage
+                              ,layer = layui.layer;
+                          //完整功能
+                          laypage.render({
+                              elem: 'demo7'
+                              ,count: data.length
+                              ,layout: ['count', 'prev', 'page', 'next', 'limit',  'skip']
+                              ,jump: function(obj){
+                                  document.getElementById('biuuu_city_list').innerHTML = function(){
+                                      var arr = []
+                                          ,thisData = data.concat().splice(obj.curr*obj.limit - obj.limit, obj.limit);
+                                      layui.each(thisData, function(index, item){
+                                          arr.push('<tr>');
+                                          arr.push('<td>'+item.name+'</td>');
+                                          arr.push('<td>'+item.mobile +'</td>');
+                                          arr.push('<td>'+item.company_name+'</td>');
+                                          arr.push('<td>'+item.number+'</td>');
+                                          arr.push('<td>'+item.balance+'</td>');
+                                          arr.push('<td>'+item.balance+'</td>');
+                                          arr.push('<td>'+item.balance+'</td>');
+                                          arr.push('<td>'+item.add_time+'</td>');
+                                          arr.push('<td>'+item.login_time+'</td>');
+                                          if(item.status == 1){
+                                              arr.push('<td><input type="checkbox" name="status" checked class="swit" value="1"  class="switch_checked" lay-filter="switchGoodsID" lay-skin="switch"  lay-text="开启|关闭"></td>');
+                                          }else{
+                                              arr.push('<td><input type="checkbox" name="status"  class="swit" value="0"  class="switch_checked" lay-filter="switchGoodsID" lay-skin="switch"  lay-text="开启|关闭"></td>');
+                                          }
+                                          arr.push('<td class="operation-menu">');
+                                          arr.push('<div class="layui-btn-group">');
+                                          arr.push('<a class="layui-btn layui-btn-normal layui-btn-xs  "data-type="edit" id="'+item.id+'" onclick="cla(this)"><i class="layui-icon layui-icon-edit"></i>'+'编辑'+'</a>');
+                                          arr.push('<a class="layui-btn layui-btn-normal layui-btn-xs"   balance="'+item.balance+'" onclick="money(this)"><i class="layui-icon layui-icon-edit"></i>'+'余额'+'</a>');
+                                          arr.push('<a class="layui-btn layui-btn-normal layui-btn-xs  "  id="'+item.id+'" onclick="subordinate(this)"><i class="layui-icon layui-icon-edit"></i>'+'下级'+'</a>');
+                                          arr.push('<a class="layui-btn layui-btn-normal layui-btn-xs  " onclick="getPrice(this)"><i class="layui-icon layui-icon-edit"></i>'+'登录'+'</a>');
+                                          arr.push('<a class="layui-btn layui-btn-danger layui-btn-xs  " id="'+item.id+'" onclick="del(this)"><i class="layui-icon layui-icon-edit"></i>'+'删除'+'</a>');
+                                          // arr.push('<a class="layui-btn layui-btn-xs layui-btn-primary  " onclick="downa(this)" types='+item.type+' id='+item.id+'>'+'拒绝'+'</a>');
+                                          arr.push('</div>');
+                                          arr.push('</td>');
+                                          arr.push('</tr>');
+                                      });
+                                      return arr.join('');
+                                  }();
+                              }
+                          });
+                      });
+                  }
+              }
+          })
+      }
+
+        function subordinate(obj){
+
+            var id = $(obj).attr('id');
+
+            $.ajax({
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                url:"http://test.tp.cn/api/login/aaa",
+                data:{id:id},
+                dataType: 'json',
+                success:function(res) {
+                    if(res.status == 2) {
+                        layui.use('layer', function(){
+                            var layer = layui.layer;
+                            layer.msg(res.msg, {
+                                offset: '15px'
+                                ,icon: 1
+                            }, function(){
+                                // window.location.reload();
+                            });
+                        });
+                    }
+                    if(res.status == 1) {
+                        layui.use('layer', function(){
+                            var layer = layui.layer;
+                            layer.msg(res.msg, {
+                                offset: '15px'
+                                ,icon: 1
+                            }, function(){
+                                window.open('http://test.layui.cn?'+id);
+                                // window.location.reload();
+                                // location.href = 'test.layui.cn?id='+res.data.id; //后台主页
+                                //保存token
+                                // localStorage.setItem("token", res.data.token);
+                                // location.href = '../'; //后台主页
+                            });
+                        });
+                    }
+                }
+            });
+        }
+
+
+
+
+
+
+
+
+</script>
+  <script>
+
+        function money(obj){
+            var balance = $(obj).attr('balance');
+            var id = $(obj).attr('id');
+            layer.open({
+                type: 2
+                ,title: '修改余额'
+                ,content: 'editmoney.html?'+id+'&balance='+balance
+                ,maxmin: true
+                ,area: ['500px', '450px']
+                ,btn: ['确定', '取消']
+                ,yes: function(index, layero){
+                    var iframeWindow = window['layui-layer-iframe'+ index]
+                        ,submitID = 'LAY-user-front-submit'
+                        ,submit = layero.find('iframe').contents().find('#'+ submitID);
+                    //监听提交
+                    iframeWindow.layui.form.on('submit('+ submitID +')', function(data){
+                        var field = data.field; //获取提交的字段
+                            field.token = localStorage.getItem("token"),
+                        //提交 Ajax 成功后，静态更新表格中的数据
+                        $.ajax({
+                            xhrFields: {
+                                withCredentials: true
+                            },
+                            crossDomain: true,
+                            url:"http://test.tp.cn/api/admininfo/addInfo",
+                            data:field,
+                            // data:{token:localStorage.getItem("token")},
+                            dataType: 'json',
+                            success:function(res) {
+                                if(res.status == 2) {
+                                    layui.use('layer', function(){
+                                        var layer = layui.layer;
+                                        layer.msg(res.msg, {
+                                            offset: '15px'
+                                            ,icon: 1
+                                        }, function(){
+                                            // window.location.reload();
+                                        });
+                                    });
+                                }
+                                if(res.status == 1) {
+                                    layui.use('layer', function(){
+                                        var layer = layui.layer;
+                                        layer.msg(res.msg, {
+                                            offset: '15px'
+                                            ,icon: 1
+                                        }, function(){
+                                            table.reload('LAY-user-front-submit'); //数据刷新
+                                            layer.close(index); //关闭弹层
+                                            window.location.reload();
+                                        });
+                                    });
+                                }
+                            }
+                        });
+
+                    });
+
+                    submit.trigger('click');
+                }
+            });
+        }
+
+
+
+      function cla(obj){
+          var id = $(obj).attr('id');
+          layer.open({
+              type: 2
+              ,title: '编辑核心代理商'
+              ,content: 'editform.html?'+id
+              ,maxmin: true
+              ,area: ['500px', '450px']
+              ,btn: ['确定', '取消']
+              ,yes: function(index, layero){
+                  var iframeWindow = window['layui-layer-iframe'+ index]
+                      ,submitID = 'LAY-user-front-submit'
+                      ,submit = layero.find('iframe').contents().find('#'+ submitID);
+                  //监听提交
+                  iframeWindow.layui.form.on('submit('+ submitID +')', function(data){
+                      var field = data.field; //获取提交的字段
+                      field.token = localStorage.getItem("token"),
+                      //提交 Ajax 成功后，静态更新表格中的数据
+                      $.ajax({
+                          xhrFields: {
+                              withCredentials: true
+                          },
+                          crossDomain: true,
+                          url:"http://test.tp.cn/api/admininfo/addInfo",
+                          data:field,
+                          dataType: 'json',
+                          success:function(res) {
+                              if(res.status == 2) {
+                                  layui.use('layer', function(){
+                                      var layer = layui.layer;
+                                      layer.msg(res.msg, {
+                                          offset: '15px'
+                                          ,icon: 1
+                                      }, function(){
+                                          // window.location.reload();
+                                      });
+                                  });
+                              }
+                              if(res.status == 1) {
+                                  layui.use('layer', function(){
+                                      var layer = layui.layer;
+                                      layer.msg(res.msg, {
+                                          offset: '15px'
+                                          ,icon: 1
+                                      }, function(){
+
+                                          window.location.reload();
+                                      });
+                                  });
+                              }
+                          }
+                      });
+
+                  });
+                  submit.trigger('click');
+              }
+          });
+      }
+        function del(obj){
+            var id = $(obj).attr('id');
+            //提交 Ajax 成功后，静态更新表格中的数据
+            $.ajax({
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                url:"http://test.tp.cn/api/admininfo/del",
+                data:{id:id},
+                dataType: 'json',
+                success:function(res) {
+                    if(res.status == 2) {
+                        layui.use('layer', function(){
+                            var layer = layui.layer;
+                            layer.msg(res.msg, {
+                                offset: '15px'
+                                ,icon: 1
+                            }, function(){
+                                // window.location.reload();
+                            });
+                        });
+                    }
+                    if(res.status == 1) {
+                        layui.use('layer', function(){
+                            var layer = layui.layer;
+                            layer.msg(res.msg, {
+                                offset: '15px'
+                                ,icon: 1
+                            }, function(){
+
+                                window.location.reload();
+                            });
+                        });
+                    }
+                }
+            });
+
+        }
+
+
+  </script>
+  <script src="../../../layuiadmin/layui/layui.js"></script>
+  <script>
+  layui.config({
+    base: '../../../layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use(['index', 'useradmin', 'table'], function(){
+    var $ = layui.$
+    ,form = layui.form
+    ,table = layui.table;
+
+    //监听搜索
+    form.on('submit(LAY-user-front-search)', function(data){
+      var field = data.field;
+
+      //执行重载
+      table.reload('LAY-user-manage', {
+        where: field
+      });
+    });
+
+    //事件
+    var active = {
+      batchdel: function(){
+        var checkStatus = table.checkStatus('LAY-user-manage')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length === 0){
+          return layer.msg('请选择数据');
+        }
+
+        layer.prompt({
+          formType: 1
+          ,title: '敏感操作，请验证口令'
+        }, function(value, index){
+          layer.close(index);
+
+          layer.confirm('确定删除吗？', function(index) {
+
+            //执行 Ajax 后重载
+            /*
+            admin.req({
+              url: 'xxx'
+              //,……
+            });
+            */
+            table.reload('LAY-user-manage');
+            layer.msg('已删除');
+          });
+        });
+      }
+      ,add: function(){
+        layer.open({
+          type: 2
+          ,title: '添加核心代理商'
+          ,content: 'userform.html?'+url
+          ,maxmin: true
+          ,area: ['500px', '450px']
+          ,btn: ['确定', '取消']
+          ,yes: function(index, layero){
+            var iframeWindow = window['layui-layer-iframe'+ index]
+            ,submitID = 'LAY-user-front-submit'
+            ,submit = layero.find('iframe').contents().find('#'+ submitID);
+
+            //监听提交
+            iframeWindow.layui.form.on('submit('+ submitID +')', function(data){
+              var field = data.field; //获取提交的字段
+                field.url = url;
+              //提交 Ajax 成功后，静态更新表格中的数据
+              $.ajax({
+                  url:"http://test.tp.cn/api/admininfo/addInfo",
+                  data:field,
+                  dataType: 'json',
+                  success:function(res) {
+                      if(res.status == 2) {
+                          layui.use('layer', function(){
+                              var layer = layui.layer;
+                              layer.msg(res.msg, {
+                                  offset: '15px'
+                                  ,icon: 1
+                              }, function(){
+                                  // window.location.reload();
+                              });
+                          });
+                      }
+                      if(res.status == 1) {
+                          layui.use('layer', function(){
+                              var layer = layui.layer;
+                              layer.msg(res.msg, {
+                                  offset: '15px'
+                                  ,icon: 1
+                              }, function(){
+                                  table.reload('LAY-user-front-submit'); //数据刷新
+                                  layer.close(index); //关闭弹层
+                                  window.location.reload();
+                              });
+                          });
+                      }
+                  }
+              });
+
+            });
+
+            submit.trigger('click');
+          }
+        });
+      }
+    };
+
+    $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+      var type = $(this).data('type');
+      active[type] ? active[type].call(this) : '';
+    });
+  });
+  </script>
+</body>
+</html>
